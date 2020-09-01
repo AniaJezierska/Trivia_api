@@ -1,4 +1,18 @@
 {
   "stories": [],
-  "versions": []
+  "versions": [],
+  "backups": [
+    {
+      "timestamp": 1598246067020,
+      "localPath": "/Users/annajezierska/Documents/BabelWorkspaceBackups/babel-2020-08-24.backup.zip",
+      "cloudProviders": [],
+      "id": "3be2af04-87f7-49fd-9afd-62c70d6c8194"
+    },
+    {
+      "timestamp": 1598945556029,
+      "localPath": "/Users/annajezierska/Documents/BabelWorkspaceBackups/babel-2020-09-01.backup.zip",
+      "cloudProviders": [],
+      "id": "7d2cf44d-ddad-4db3-92a3-cb43c7b37e4f"
+    }
+  ]
 }

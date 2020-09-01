@@ -30,7 +30,7 @@ class TriviaTestCase(unittest.TestCase):
         pass
 
     
-    # TODO: Write at least one test for each test for successful 
+    # TODO: Write at least one test for each test for successfull 
     # operation and for expected errors.
 
     def test_get_paginated_questions(self):
@@ -46,68 +46,82 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['total_questions'])
         self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
         self.assertTrue(data['categories'])
         self.assertTrue(data['current_category'])
+
+    def test_404_get_questions(self):
+        response = self.client().get('/questions?page=1000')
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 404)
+        self.assertEqual(data['message'], 'Not found')
 
     def test_get_categories(self):
         response = self.client().get('/categories')
         data = json.loads(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
+        self.assertTrue(data['categories'])
+
+    def test_404_get_categories(self):
+        response = self.client().get('/categories/1')
+        self.assertEqual(response.status_code, 404)
 
     def test_get_questions_by_category(self):
-        response = self.client().get('/categories/2/questions')
+        response = self.client().get('/categories/1/questions')
         data = json.loads(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertNotEqual(len(data['questions']), 0)
-        self.assertEqual(data['current_category'], 'Art')        
+        self.assertTrue(data['total_questions'] > 0)
+        self.assertTrue(data['current_category'])
 
-    def test_create_new_question(self):
+    def test_422_get_questions_by_category(self):
+        response = self.client().get('/categories/10/questions')
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Unproccesable entity')    
+
+    def test_new_questions(self):
+        response = self.client().post('/questions', json = self.question)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_422_new_questions(self):
         response = self.client().post('/questions')
         data = json.loads(response.data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['created'])
-        self.assertTrue(len(data['questions']))    
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Unproccesable entity')
 
     def test_delete_question(self):
-        response = self.client().delete('/questions/1')
+        response = self.client().delete('/questions/10')
         data = json.loads(response.data)
-        question = Question.query.filter(Question.id == 1).one_or_none()
+        question = Question.query.filter(Question.id == 10).one_or_none()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertEqual(question, None)
 
-    def test_sent_requesting_beyond_valid_page(self):
-        response = self.client().get('/questions?page=100')
-        data = json.loads(response.data)
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Resource not found')    
-
-    def test_question_does_not_exist(self):
-        response = self.client().delete('/question/999')
+    def test_422_delete_question(self):
+        response = self.client().delete('/questions/1000')
         data = json.loads(response.data)
         self.assertEqual(response.status_code, 422)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Unable to process request.')   
+        self.assertEqual(data['message'], 'Unproccesable entity')
 
     def test_play(self):
-        response = self.client().post('/quizzes')
-        data = json.loads(response.data)        
-        json_data = {
-            'previous_questions': [{
-                'question': 'fake question',
-                'answer': 'fake answer',
-                'category': '1',
-                'difficulty': '1'}],
-            'quiz_category': {'id': '1', 'type': 'Science'},
-            'guess': 'fake'}
+        response = self.client().post('/quizzes', json = {
+        'previous_questions': [],
+        'quiz_category': {'id': 5, 'type': 'Entertainment'}
+        })
+        data = json.loads(response.data)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(data['question'])                     
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
 
 # Make the tests conveniently executable
