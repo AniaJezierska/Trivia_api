@@ -8,12 +8,12 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10          
 
-def paginate_questions(request, selection):  
-  page = request.args.get('page', 1, type=int)     
-  start =  (page - 1) * QUESTIONS_PER_PAGE      
+def paginate_results(request, questions):
+  page = request.args.get('page', 1, type=int)
+  start = (page - 1) * QUESTIONS_PER_PAGE
   end = start + QUESTIONS_PER_PAGE
 
-  questions = [question.format() for question in selection]
+  questions = [question.format() for question in questions]
   current_questions = questions[start:end]
 
   return current_questions
@@ -42,13 +42,17 @@ def create_app(test_config=None):
 # TODO: Create an endpoint to handle GET requests for all available categories.
 
   @app.route('/categories')
-  def all_categories():
-          categories = [category.format() for category in Category.query.all()]
+  def all_categories():     
+      categories = Category.query.all()
+      formatted_categories = {}
+      for category in categories:
+        formatted_categories[category.id]=category.type
 
-          return jsonify({
-              'success': True,
-              'categories': categories
-          }) 
+      return jsonify({
+          'success': True,
+          'categories': formatted_categories,
+          'total_categories': len(categories)
+      }) 
 
 # TODO: Create an endpoint to handle GET requests for questions, 
 #       including pagination (every 10 questions). 
@@ -57,16 +61,22 @@ def create_app(test_config=None):
 
   @app.route('/questions')
   def all_questions():
-      page = request.args.get('page', 1, type=int)
-      questions = Question.query.all()
-      categories = [category.format() for category in Category.query.all()]
-      results = paginate_questions(page, questions)
+      questions = Question.query.order_by(Question.id).all()
+      results = paginate_results(request, questions)
+
+      if len(results) == 0:
+        abort(404)
+
+      categories = Category.query.all()
+      formatted_categories = {}
+      for category in categories:
+        formatted_categories[category.id] = category.type
 
       return jsonify({
           'success': True,
           'questions': results,
-          'total_questions': len(questions),
-          'categories': categories,
+          'total_questions': len(Question.query.all()),
+          'categories': formatted_categories,
           'current_category': None
       })   
 
@@ -84,10 +94,10 @@ def create_app(test_config=None):
           return jsonify({
               'success': True,
               'id': question_id
-          })
+          })   
 
-      except:
-        abort(422)
+      except Exception:
+         abort(422)           
 
 
 # TODO: Create an endpoint to POST a new question, 
@@ -95,28 +105,28 @@ def create_app(test_config=None):
 #       category, and difficulty score.
 
   @app.route('/questions', methods=['POST'])
-  def create_question():        
-      body = request.get_json()    
-
-      new_question = body['question']
-      new_answer = body['answer']
-      new_category = body['category']
-      new_difficulty = body['difficulty']   
-
+  def create_question():     
+      body = request.get_json(request)
+      new_question = body.get('question')
+      new_answer = body.get('answer')
+      new_category = body.get('category')
+      new_difficulty = body.get('difficulty')
+      if (new_question == '' or new_answer == '' or
+          new_category == '' or
+              new_difficulty == ''):
+            abort(400)
       try:
-          quesion = Question(question=new_question, 
-                              answer=new_answer, 
-                              category=new_category, 
-                              difficulty=new_difficulty)
-          quesion.insert()           
+          question = Question(question=new_question, answer=new_answer,
+                                category=new_category,
+                                difficulty=new_difficulty)
+          question.insert()
 
           return jsonify({
-              'success': True,
-              'created': question.id
+                'success': True,
+                'created': question.id
           })
-
       except Exception:
-        abort(422)    
+          abort(422)
             
     
 # TODO: Create a POST endpoint to get questions based on a search term. 
@@ -145,22 +155,19 @@ def create_app(test_config=None):
 
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):   
-
       category = Category.query.filter_by(id=category_id).first()
-
       if category is None:
           abort(404)
-
-      questions = [question.format() for question in category.questions]     
-
+          
+      questions = [question.format() for question in category.questions]
 
       return jsonify({
-          'success':True,
-          'questions': formatted_questions,
+          'success': True,
+          'questions': questions,
           'total_questions': len(questions),
           'current_category': category.format()
-      })      
-    
+      }) 
+         
 
 # TODO: Create a POST endpoint to get questions to play the quiz. 
 #       This endpoint should take category and previous question parameters 
@@ -189,7 +196,7 @@ def create_app(test_config=None):
                   Question.category == category)
           else:        
               questions = questions.all()
-          
+            
           next_question = questions[category_id]
           
           if category_id == questions:

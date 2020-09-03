@@ -86,16 +86,18 @@ The API will return four error types when requests fail:
 ## Endpoints
 
 GET '/categories'
-Create a POST endpoint to get questions based on category.
+
+
+POST '/categories/int:category_id/questions'
+
+
+GET '/questions'
 
 
 POST '/questions'
-Create an endpoint to POST a new question
 
 
 DELETE '/questions'
-Create an endpoint to DELETE question using a question ID. 
-
 
 
 
