@@ -36,14 +36,6 @@ With Postgres running, restore a database using the trivia.psql file provided. F
 psql trivia < trivia.psql
 ```
 
-## Database Setup for Testing
-With Postgres running, restore a test database using the trivia.psql. From the backend folder in terminal run:
-```
-dropdb trivia_test
-createdb trivia_test
-psql trivia_test < trivia.psql
-```
-
 ## Running the server
 
 From within the `backend` directory first ensure you are working using your created virtual environment.
@@ -86,20 +78,150 @@ The API will return four error types when requests fail:
 ## Endpoints
 
 GET '/categories'
-
+Returns a list of category objects, success value and total number of all_categories
+Sample: curl http://127.0.0.1:5000/categories
+  {
+    "categories": {
+      "1": "Science", 
+      "2": "Art", 
+      "3": "Geography", 
+      "4": "History", 
+      "5": "Entertainment", 
+      "6": "Sports"
+    }, 
+    "success": true, 
+    "total_categories": 6
+  }
 
 POST '/categories/int:category_id/questions'
-
+Create a POST endpoint to get questions based on category.
+Sample: curl http://127.0.0.1:5000/categories/4/questions
+  {
+    "current_category": 4, 
+    "questions": [
+      {
+        "answer": "George Washington Carver", 
+        "category": 4, 
+        "difficulty": 2, 
+        "id": 12, 
+        "question": "Who invented Peanut Butter?"
+      }, 
+      {
+        "answer": "Scarab", 
+        "category": 4, 
+        "difficulty": 4, 
+        "id": 23, 
+        "question": "Which dung beetle was worshipped by the ancient Egyptians?"
+      }
+    ], 
+    "success": true, 
+    "total_questions": 2
+  }
 
 GET '/questions'
-
+Returns a list of category objects, success value and total number of all_categories
+Sample: curl http://127.0.0.1:5000/questions
+  {
+    "categories": {
+      "1": "Science", 
+      "2": "Art", 
+      "3": "Geography", 
+      "4": "History", 
+      "5": "Entertainment", 
+      "6": "Sports"
+    }, 
+    "current_category": null, 
+    "questions": [
+      {
+        "answer": "Apollo 13", 
+        "category": 5, 
+        "difficulty": 4, 
+        "id": 2, 
+        "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+      }, 
+      {
+        "answer": "Tom Cruise", 
+        "category": 5, 
+        "difficulty": 4, 
+        "id": 4, 
+        "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+      }, 
+      {
+        "answer": "Brazil", 
+        "category": 6, 
+        "difficulty": 3, 
+        "id": 10, 
+        "question": "Which is the only team to play in every soccer World Cup tournament?"
+      }, 
+      {
+        "answer": "Uruguay", 
+        "category": 6, 
+        "difficulty": 4, 
+        "id": 11, 
+        "question": "Which country won the first ever soccer World Cup in 1930?"
+      }, 
+      {
+        "answer": "George Washington Carver", 
+        "category": 4, 
+        "difficulty": 2, 
+        "id": 12, 
+        "question": "Who invented Peanut Butter?"
+      }, 
+      {
+        "answer": "Lake Victoria", 
+        "category": 3, 
+        "difficulty": 2, 
+        "id": 13, 
+        "question": "What is the largest lake in Africa?"
+      }, 
+      {
+        "answer": "The Palace of Versailles", 
+        "category": 3, 
+        "difficulty": 3, 
+        "id": 14, 
+        "question": "In which royal palace would you find the Hall of Mirrors?"
+      }, 
+      {
+        "answer": "Agra", 
+        "category": 3, 
+        "difficulty": 2, 
+        "id": 15, 
+        "question": "The Taj Mahal is located in which Indian city?"
+      }, 
+      {
+        "answer": "Escher", 
+        "category": 2, 
+        "difficulty": 1, 
+        "id": 16, 
+        "question": "Which Dutch graphic artist\u2013initials M C was a creator of optical illusions?"
+      }, 
+      {
+        "answer": "Mona Lisa", 
+        "category": 2, 
+        "difficulty": 3, 
+        "id": 17, 
+        "question": "La Giaconda is better known as what?"
+      }
+    ], 
+    "success": true, 
+    "total_questions": 27
+  }
 
 POST '/questions'
-
+Create an endpoint to POST a new question
+Sample: curl -d '{"question":"xyz","answer":"xyz", "difficulty": 2, "category": 2}' -H "Content-Type: application/json" -X POST http://localhost:5000/questions
+  {
+    "created": 36, 
+    "success": true
+  }
 
 DELETE '/questions'
-
-
+Create an endpoint to DELETE question using a question ID.
+Sample: curl -X DELETE http://127.0.0.1:5000/questions/2
+{
+  "id": 2, 
+  "success": true
+}
 
 ## Testing
 To run the tests, run

@@ -39,20 +39,6 @@ def create_app(test_config=None):
       
       return response  
 
-# TODO: Create an endpoint to handle GET requests for all available categories.
-
-  @app.route('/categories')
-  def all_categories():     
-      categories = Category.query.all()
-      formatted_categories = {}
-      for category in categories:
-        formatted_categories[category.id]=category.type
-
-      return jsonify({
-          'success': True,
-          'categories': formatted_categories,
-          'total_categories': len(categories)
-      }) 
 
 # TODO: Create an endpoint to handle GET requests for questions, 
 #       including pagination (every 10 questions). 
@@ -78,8 +64,23 @@ def create_app(test_config=None):
           'total_questions': len(Question.query.all()),
           'categories': formatted_categories,
           'current_category': None
-      })   
+      })
+      
 
+# TODO: Create an endpoint to handle GET requests for all available categories.
+
+  @app.route('/categories')
+  def all_categories():     
+      categories = Category.query.all()
+      formatted_categories = {}
+      for category in categories:
+        formatted_categories[category.id] = category.type
+
+      return jsonify({
+          'success': True,
+          'categories': formatted_categories,
+          'total_categories': len(categories)
+      }) 
 
 # TODO: Create an endpoint to DELETE question using a question ID. 
 
@@ -153,21 +154,22 @@ def create_app(test_config=None):
 
 # TODO: Create a GET endpoint to get questions based on category. 
 
-  @app.route('/categories/<int:category_id>/questions')
-  def get_questions_by_category(category_id):   
-      category = Category.query.filter_by(id=category_id).first()
-      if category is None:
-          abort(404)
-          
-      questions = [question.format() for question in category.questions]
-
-      return jsonify({
-          'success': True,
-          'questions': questions,
-          'total_questions': len(questions),
-          'current_category': category.format()
-      }) 
-         
+  @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+  def getByCategory(category_id):
+      page = request.args.get('page', 1, type=int)
+      start = (page -1)*10
+      end = start +10
+      questions = Question.query.filter(Question.category == category_id).all()
+      formatted_questions = [question.format() for question in questions]
+      if formatted_questions is None:
+           abort(404)
+      else:
+          return jsonify({
+            'success':True,
+            'questions': formatted_questions[start:end],
+            'total_questions': len(formatted_questions),
+            'current_category': category_id
+            })  
 
 # TODO: Create a POST endpoint to get questions to play the quiz. 
 #       This endpoint should take category and previous question parameters 
